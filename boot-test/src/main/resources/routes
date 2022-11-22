@@ -1,7 +1,7 @@
 
 # com.binfast.adpter.doc.ApiController  
 GET    /api/doc/router    com.binfast.adpter.doc.ApiController.router()
-GET    /api/doc/api-json    com.binfast.adpter.doc.ApiController.apiJson()
+GET    /api/doc/api-json/{projectName}    com.binfast.adpter.doc.ApiController.apiJson(String projectName)
 
 # goodsServiceImpl  商品管理
 # 增加商品
@@ -10,11 +10,11 @@ POST    /api/goods/add    com.binfast.boottest.service.GoodsServiceImpl.addGoods
 GET    /api/goods/get    com.binfast.boottest.service.GoodsServiceImpl.getGodds(Integer id)
 
 # shopController  
-GET    /api/shop/shopDetail    com.binfast.boottest.controller.ShopController.shopDetail(Long id)
-POST    /api/shop/addSHop    com.binfast.boottest.controller.ShopController.addShop(Shop shop)
+POST    /api/api/shop/addSHop    com.binfast.boottest.controller.ShopController.addShop(Shop shop)
+GET    /api/api/shop/shopDetail/{id}    com.binfast.boottest.controller.ShopController.shopDetail(Long id)
 
 # userServiceImpl  
 # 获取用户资料
-GET    /api/getUser    com.binfast.boottest.service.UserServiceImpl.getUser(String userId, String username)
+GET    /api/getUser/{userId}    com.binfast.boottest.service.UserServiceImpl.getUser(String userId, String username)
 # 用户登录中
 GET    /api/login/{userId}/{password}    com.binfast.boottest.service.UserServiceImpl.login(String userId, String password)

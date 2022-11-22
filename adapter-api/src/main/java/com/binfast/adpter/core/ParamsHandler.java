@@ -29,14 +29,16 @@ public class ParamsHandler {
     private String rawData;
     private String urlPara;
     private String[] urlParaArray;
+    private Map<String, String> uriVariables;
 
     private static final String[] NULL_URL_PARA_ARRAY = new String[0];
     private static final String URL_PARA_SEPARATOR = "-";
 
-    public ParamsHandler(HttpServletRequest request, HttpServletResponse response, String urlPara) {
+    public ParamsHandler(HttpServletRequest request, HttpServletResponse response, Map<String, String> uriVariables) {
         this.request = request;
         this.response = response;
-        this.urlPara = urlPara;
+        this.uriVariables = uriVariables;
+        this.urlPara = "";
         this.urlParaArray = null;
     }
 
@@ -111,6 +113,7 @@ public class ParamsHandler {
     public String getPara(String name) {
         // return request.getParameter(name);
         String result = request.getParameter(name);
+        result = checkUriVariables(result, name);
         return result != null && result.length() != 0 ? result : null;
     }
 
@@ -122,7 +125,15 @@ public class ParamsHandler {
      */
     public String getPara(String name, String defaultValue) {
         String result = request.getParameter(name);
+        result = checkUriVariables(result, name);
         return result != null && result.length() != 0 ? result : defaultValue;
+    }
+
+    private String checkUriVariables(String result, String name) {
+        if (result == null || result.length() == 0) {
+            result = uriVariables.get(name);
+        }
+        return result;
     }
 
     /**

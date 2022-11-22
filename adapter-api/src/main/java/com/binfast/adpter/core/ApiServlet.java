@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -40,7 +41,7 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
     private static final Pattern PATH_VARIABLE_PATTERN =  Pattern.compile("\\{[^/]+?\\}");
     private static final String PATH_VARIABLE_REPLACE =  "([^/]+)";
 
-    private Map<ApiRoute, ApiRunnable> staticRouterRegisters = new HashMap<>();
+    private Map<ApiRoute, ApiRunnable> registers = new HashMap<>();
     private Map<Integer, ApiRunnable> regexRouteRegisters = new HashMap<>();
     private Pattern regexRoutePatterns;
 
@@ -60,6 +61,8 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
 
     private void loadApi() {
         String[] names = context.getBeanDefinitionNames();
+        int indexes = 1;
+        StringBuilder patternBuilders = new StringBuilder("^");
         for (String name : names) {
             Class<?> type = context.getType(name);
             for (Method method : type.getDeclaredMethods()) {
@@ -67,23 +70,48 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
 //                // 包装一个API
                 if (mapping != null) {
                     ApiMapping beanMapping = type.getAnnotation(ApiMapping.class);
+                    String beanValue = "", beanNote = "";
                     if (beanMapping != null) {
-                        registerApi(name, method, mapping, beanMapping.value(), beanMapping.notes());
-                    } else {
-                        registerApi(name, method, mapping, "", "");
+                        beanValue = beanMapping.value();
+                        beanNote = beanMapping.notes();
                     }
+                    indexes = registerApi(name, method, mapping, beanValue, beanNote, indexes, patternBuilders);
                 }
             }
         }
+        patternBuilders.setCharAt(patternBuilders.length() - 1, '$');
+        regexRoutePatterns = Pattern.compile(patternBuilders.toString());
+        logger.info("loaded API ");
     }
 
-    //  注册一个API
-    private void registerApi(String beanName, Method method, ApiMapping mapping, String beanValue, String beanNotes) {
+    /**
+     * 注册一个API
+     */
+    private int registerApi(String beanName, Method method, ApiMapping mapping, String beanValue, String beanNotes, int indexes, StringBuilder patternBuilders) {
+        String path = pathPrefix + beanValue + mapping.value();
         ApiRunnable runnable = new ApiRunnable(method, beanName);
-        //TODO 检测 method 是否可调用 （开发阶段）
         ApiRoute apiRoute = ApiRoute.valueOf(beanName, mapping.method() == null || mapping.method().length == 0 ? null : mapping.method()[0].name(),
-                pathPrefix + beanValue + mapping.value(), buildMethodFullName(method), beanNotes, mapping.notes());
-        staticRouterRegisters.put(apiRoute, runnable); //方法名称
+                path, buildMethodFullName(method), beanNotes, mapping.notes());
+
+        Matcher matcher = PATH_VARIABLE_PATTERN.matcher(path);
+        boolean find = false;
+        List<String> uriVariableNames = new ArrayList<>();
+        while (matcher.find()) {
+            if (!find) {
+                find = true;
+            }
+            String group = matcher.group(0);
+            // {id} -> id
+            uriVariableNames.add(group.substring(1, group.length() - 1));
+        }
+        if (find) {
+            regexRouteRegisters.put(indexes, runnable);
+            runnable.setUriVariableNames(uriVariableNames);
+            indexes = indexes + uriVariableNames.size() + 1;
+            patternBuilders.append("(").append(matcher.replaceAll(PATH_VARIABLE_REPLACE)).append(")|");
+        }
+        registers.put(apiRoute, runnable);
+        return indexes;
     }
 
     // 获取方法的全限定名
@@ -116,11 +144,28 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
         String method = req.getMethod();
         ApiRoute apiRoute = ApiRoute.valueOf(method, req.getServletPath());
         try {
-            ApiRunnable runnable = staticRouterRegisters.get(apiRoute);
+            ApiRunnable runnable = registers.get(apiRoute);
+            Map<String, String> uriVariables = null;
             if (runnable == null) {
-                throw ExceptionFactory.sysException("400", "未找到路由");
+                uriVariables = new LinkedHashMap<>();
+                Matcher matcher = regexRoutePatterns.matcher(req.getServletPath());
+                if (matcher.matches()) {
+                    int i;
+                    for (i = 1; matcher.group(i) == null; i++);
+                    runnable = regexRouteRegisters.get(i);
+
+                    // find path variable
+                    String uriVariable;
+                    int j = 0;
+                    while (++i <= matcher.groupCount() && (uriVariable = matcher.group(i)) != null) {
+                        uriVariables.put(runnable.getUriVariableNames().get(j++), uriVariable);
+                    }
+                }
+                if (runnable == null) {
+                    throw ExceptionFactory.sysException("400", "未找到路由");
+                }
             }
-            ParamsHandler paramsHandler = buildParam(runnable, req, resp);
+            ParamsHandler paramsHandler = buildParam(uriVariables, req, resp);
             Object result = runnable.run(paramsHandler);
             resp.setStatus(HttpStatus.OK.value());
             writeResult(result, resp);
@@ -133,8 +178,8 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
         }
     }
 
-    private ParamsHandler buildParam(ApiRunnable apiRunnable, HttpServletRequest req, HttpServletResponse resp) {
-        ParamsHandler paramsHandler = new ParamsHandler(req, resp, null);
+    private ParamsHandler buildParam(Map<String, String> uriVariables, HttpServletRequest req, HttpServletResponse resp) {
+        ParamsHandler paramsHandler = new ParamsHandler(req, resp, uriVariables);
         if (paramsHandler.isJsonRequest()) {
             paramsHandler.setRequest(new JsonRequest(paramsHandler.getRawData(), req));
 
@@ -283,6 +328,7 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
         Object target;
         String beanName;
         private Object[] args;
+        private List<String> uriVariableNames;
 
         private final ParaProcessor parameterGetter;
 
@@ -310,10 +356,18 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
                 throw new RuntimeException(e);
             }
         }
+
+        public List<String> getUriVariableNames() {
+            return uriVariableNames;
+        }
+
+        public void setUriVariableNames(List<String> uriVariableNames) {
+            this.uriVariableNames = uriVariableNames;
+        }
     }
 
     public Map<ApiRoute, ApiRunnable> getRegisters() {
-        return staticRouterRegisters;
+        return registers;
     }
 
     public String getPathPrefix() {
