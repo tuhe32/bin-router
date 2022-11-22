@@ -1,0 +1,433 @@
+{
+  "components": {
+    "schemas": {
+      "GoodsServiceImplGoods": {
+        "properties": {
+          "goodsName": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "goodsId": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "labels": {
+            "description": "No comments found."
+          }
+        }
+      },
+      "string": {
+        "format": "string",
+        "type": "string"
+      },
+      "ShopServiceImplShop": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number"
+          },
+          "name": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "UserInfo": {
+        "properties": {
+          "name": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "userId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number"
+          },
+          "sex": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "idcard": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": ""
+    }
+  ],
+  "openapi": "3.0.3",
+  "paths": {
+    "/login/{userId}/{password}": {
+      "get": {
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          ""
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfo"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"name\": \"gerard.johnston\",\n  \"userId\": 278,\n  \"sex\": \"d5o538\",\n  \"idcard\": \"431013198904182958\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "login{userId}{password}",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": "85",
+            "name": "userId"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": "bnesvy",
+            "name": "password"
+          }
+        ]
+      }
+    },
+    "/shop/shopDetail": {
+      "get": {
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          ""
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopServiceImplShop"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"id\": 274,\n  \"name\": \"gerard.johnston\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "shopshopDetail",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "747",
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/getUser": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "获取用户资料",
+        "tags": [
+          ""
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfo"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"name\": \"gerard.johnston\",\n  \"userId\": 943,\n  \"sex\": \"z38cth\",\n  \"idcard\": \"431013198904182958\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "85",
+            "name": "userId"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "gerard.johnston",
+            "name": "username"
+          }
+        ]
+      }
+    },
+    "/goods/get": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "商品明细",
+        "tags": [
+          ""
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsServiceImplGoods"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"goodsName\": \"gerard.johnston\",\n  \"goodsId\": \"85\",\n  \"labels\": [\n    \"j8spz2\"\n  ]\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "goodsget",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "466",
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/goods/add": {
+      "post": {
+        "summary": "",
+        "deprecated": false,
+        "description": "增加商品",
+        "tags": [
+          ""
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded;charset=UTF-8": {
+              "schema": {},
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "curl -X POST -i /goods/add --data 'goodsName=gerard.johnston&goodsId=85&labels=22ckek,89sobd&id=394'"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsServiceImplGoods"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"goodsName\": \"gerard.johnston\",\n  \"goodsId\": \"85\",\n  \"labels\": [\n    \"r6p28u\"\n  ]\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "goodsadd",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "gerard.johnston",
+            "name": "goodsName"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "85",
+            "name": "goodsId"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "string"
+              }
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "22ckek,89sobd",
+            "name": "labels"
+          },
+          {
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "394",
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/shop/addSHop": {
+      "post": {
+        "summary": "",
+        "deprecated": false,
+        "description": "增加店铺",
+        "tags": [
+          ""
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded;charset=UTF-8": {
+              "schema": {},
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "curl -X POST -i /shop/addSHop --data 'id=212&name=gerard.johnston'"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "shopaddSHop",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "212",
+            "name": "id"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": "gerard.johnston",
+            "name": "name"
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "boottest",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "",
+      "description": ""
+    },
+    {
+      "name": "",
+      "description": ""
+    },
+    {
+      "name": "",
+      "description": ""
+    },
+    {
+      "name": "",
+      "description": ""
+    }
+  ]
+}
