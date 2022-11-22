@@ -112,8 +112,7 @@ public class ParamsHandler {
      */
     public String getPara(String name) {
         // return request.getParameter(name);
-        String result = request.getParameter(name);
-        result = checkUriVariables(result, name);
+        String result = checkAndGetPara(name);
         return result != null && result.length() != 0 ? result : null;
     }
 
@@ -124,14 +123,26 @@ public class ParamsHandler {
      * @return a String representing the single value of the parameter
      */
     public String getPara(String name, String defaultValue) {
-        String result = request.getParameter(name);
-        result = checkUriVariables(result, name);
+        String result = checkAndGetPara(name);
         return result != null && result.length() != 0 ? result : defaultValue;
     }
 
-    private String checkUriVariables(String result, String name) {
+    private String checkAndGetPara(String name) {
+        String result = request.getParameter(name);
         if (result == null || result.length() == 0) {
-            result = uriVariables.get(name);
+            if (uriVariables != null) {
+                result = uriVariables.get(name);
+            }
+        }
+        return result;
+    }
+
+    private String[] checkAndGetParaArr(String name) {
+        String[] result = request.getParameterValues(name);
+        if (result == null || result.length == 0) {
+            if (uriVariables != null) {
+                result = new String[]{uriVariables.get(name)};
+            }
         }
         return result;
     }
@@ -163,7 +174,7 @@ public class ParamsHandler {
      * @return an array of String objects containing the parameter's values
      */
     public String[] getParaValues(String name) {
-        return request.getParameterValues(name);
+        return checkAndGetParaArr(name);
     }
 
     /**
@@ -174,7 +185,7 @@ public class ParamsHandler {
      * @return an array of Integer objects containing the parameter's values
      */
     public Integer[] getParaValuesToInt(String name) {
-        String[] values = request.getParameterValues(name);
+        String[] values = checkAndGetParaArr(name);
         if (values == null || values.length == 0) {
             return null;
         }
@@ -186,7 +197,7 @@ public class ParamsHandler {
     }
 
     public Long[] getParaValuesToLong(String name) {
-        String[] values = request.getParameterValues(name);
+        String[] values = checkAndGetParaArr(name);
         if (values == null || values.length == 0) {
             return null;
         }
@@ -274,7 +285,7 @@ public class ParamsHandler {
      * @return a Integer representing the single value of the parameter
      */
     public Integer getParaToInt(String name, Integer defaultValue) {
-        return toInt(request.getParameter(name), defaultValue);
+        return toInt(checkAndGetPara(name), defaultValue);
     }
 
     private Long toLong(String value, Long defaultValue) {
@@ -306,7 +317,7 @@ public class ParamsHandler {
      * @return a Integer representing the single value of the parameter
      */
     public Long getParaToLong(String name, Long defaultValue) {
-        return toLong(request.getParameter(name), defaultValue);
+        return toLong(checkAndGetPara(name), defaultValue);
     }
 
     private Boolean toBoolean(String value, Boolean defaultValue) {
@@ -335,7 +346,7 @@ public class ParamsHandler {
      * @return true if the value of the parameter is "true" or "1", false if it is "false" or "0", default value if it is null
      */
     public Boolean getParaToBoolean(String name, Boolean defaultValue) {
-        return toBoolean(request.getParameter(name), defaultValue);
+        return toBoolean(checkAndGetPara(name), defaultValue);
     }
 
     /**
@@ -387,7 +398,7 @@ public class ParamsHandler {
      * @return a Date representing the single value of the parameter
      */
     public Date getParaToDate(String name, Date defaultValue) {
-        return toDate(request.getParameter(name), defaultValue);
+        return toDate(checkAndGetPara(name), defaultValue);
     }
 
     /**
