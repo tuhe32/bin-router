@@ -7,31 +7,31 @@
     <groupId>io.github.tuhe32</groupId>
     <artifactId>bin-router</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>${project.artifactId}</name>
     <description>${project.artifactId}</description>
     <url>https://github.com/tuhe32/bin-router</url>
 
-    <repositories>
-        <repository>
-            <id>alimaven</id>
-            <name>Naliyun maven</name>
-            <url>https://maven.aliyun.com/repository/public/</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>public</id>
-            <name>aliyun nexus</name>
-            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>alimaven</id>-->
+<!--            <name>Naliyun maven</name>-->
+<!--            <url>https://maven.aliyun.com/repository/public/</url>-->
+<!--        </repository>-->
+<!--    </repositories>-->
+<!--    <pluginRepositories>-->
+<!--        <pluginRepository>-->
+<!--            <id>public</id>-->
+<!--            <name>aliyun nexus</name>-->
+<!--            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>-->
+<!--            <releases>-->
+<!--                <enabled>true</enabled>-->
+<!--            </releases>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--        </pluginRepository>-->
+<!--    </pluginRepositories>-->
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
