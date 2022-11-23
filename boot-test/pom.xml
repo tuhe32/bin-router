@@ -25,9 +25,9 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.binfast</groupId>
+            <groupId>io.github.tuhe32</groupId>
             <artifactId>adapter-api-spring-boot-starter</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
 <!--        &lt;!&ndash; https://mvnrepository.com/artifact/cn.xusc/trace-recorder-core &ndash;&gt;-->
 <!--        <dependency>-->
