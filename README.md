@@ -1,11 +1,11 @@
 # 工程简介
 
-基于Spring的适配器路由，将原先的Controller层封装，直接在Service层暴露路由，但是兼容原有Controller写法。
+基于Spring的适配器路由，将原先的Controller层封装，直接在Service层暴露路由，兼容原有Controller写法。
 
-- 直接在Service中注册路由信息
-- 可自定义的接口返回格式封装
-- 监听自定义异常处理
-- 可生成routes项目全局路由表，intellij安装play2routes插件后，可以直接跳转到路由映射接口
+- 直接在Service注册路由信息
+- 自定义的接口返回格式封装
+- 自定义异常处理
+- 可生成routes全局路由表，intellij安装play2routes插件后，可以直接跳转到路由映射接口
 - 可根据接口注释的@tag标签生成API文档，可导出到Apifox等接口文档管理软件中，方便mock和前端联调
 
 # 使用说明
@@ -75,7 +75,7 @@
 
 - 生成routes全局路由表
 
-  浏览器请求 http://127.0.0.1:[xxxx]/doc/router 本地地址，端口替换成项目端口。如http://127.0.0.1:8080/doc/router，访问后resources目录下会出现routes文件
+  浏览器请求 http://127.0.0.1:[端口号]/doc/router 本地地址，端口替换成项目端口。如http://127.0.0.1:8080/doc/router，访问后resources目录下会出现routes路由表文件
   <img width="1117" alt="image" src="https://user-images.githubusercontent.com/18496264/203773150-2b09e004-6924-4b09-b576-cdc5b7e987e9.png">
 
 - 生成API文档
@@ -133,19 +133,13 @@
 
 # 延伸阅读
 
-正则路由匹配问题参考
+正则路由匹配问题参考：[fast-route](https://www.scienjus.com/fastroute-spring/ )
 
-[fast-route]: https://www.scienjus.com/fastroute-spring/
+根据自带的tag生成API文档使用：[smart-doc](https://smart-doc-group.github.io/#/zh-cn/start/quickstart )
 
-根据自带的tag生成API文档使用
+接口参数解析以及封装参考：[jfinal](https://jfinal.com/doc/3-3 )
 
-[smart-doc]: https://smart-doc-group.github.io/#/zh-cn/start/quickstart
-
-接口参数解析以及封装参考
-
-[jfinal]: https://jfinal.com/doc/3-3
-
-重写springMvc的RequestMappingInfoHandlerMapping，没有直接使用dispathServlet
+重写springMvc的RequestMappingInfoHandlerMapping
 
 项目整体思路参考one-api
 
