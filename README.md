@@ -76,6 +76,7 @@
 - 生成routes全局路由表
 
   浏览器请求 http://127.0.0.1:[xxxx]/doc/router 本地地址，端口替换成项目端口。如http://127.0.0.1:8080/doc/router，访问后resources目录下会出现routes文件
+  <img width="1117" alt="image" src="https://user-images.githubusercontent.com/18496264/203773150-2b09e004-6924-4b09-b576-cdc5b7e987e9.png">
 
 - 生成API文档
 
