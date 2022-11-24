@@ -73,6 +73,14 @@
   }
   ```
 
+- 生成routes全局路由表
+
+  浏览器请求 http://127.0.0.1:[xxxx]/doc/router 本地地址，端口替换成项目端口。如http://127.0.0.1:8080/doc/router，访问后resources目录下会出现routes文件
+
+- 生成API文档
+
+  浏览器请求 http://127.0.0.1:[端口号]/doc/api-json/[项目名] 本地地址，端口替换成项目端口。访问后resources目录下会出现基于OpenApi3.0 格式生成的openapi.json文件，可导入到Apifox中实现接口的Mock以及前后端对接
+
 - 自定义接口返回格式：1.实现ResponseProcessor接口，2.用@Component注解标记。
 
   ```java
