@@ -1,11 +1,12 @@
 package com.binfast.adpter.core;
 
-import com.alibaba.cola.dto.Response;
 import com.alibaba.cola.exception.BizException;
 import com.alibaba.cola.exception.ExceptionFactory;
 import com.alibaba.cola.exception.SysException;
 import com.alibaba.fastjson2.JSON;
 import com.binfast.adpter.core.annotations.ApiMapping;
+import com.binfast.adpter.core.factory.GlobalExceptionResolver;
+import com.binfast.adpter.core.factory.ResponseFactory;
 import com.binfast.adpter.core.paramconvert.ParaProcessor;
 import com.binfast.adpter.core.paramconvert.ParaProcessorBuilder;
 import org.slf4j.Logger;
@@ -18,16 +19,21 @@ import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ClassUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.ExceptionHandlerMethodResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,17 +43,20 @@ import java.util.regex.Pattern;
  */
 public class ApiServlet implements InitializingBean, ApplicationContextAware {
     private static final Logger logger = LoggerFactory.getLogger(ApiServlet.class);
-    private static final String FAIL_CODE = "1";
-    private static final Pattern PATH_VARIABLE_PATTERN =  Pattern.compile("\\{[^/]+?\\}");
-    private static final String PATH_VARIABLE_REPLACE =  "([^/]+)";
+    private static final String FAIL_CODE = "SYS_ERROR";
+    private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("\\{[^/]+?\\}");
+    private static final String PATH_VARIABLE_REPLACE = "([^/]+)";
 
-    private Map<ApiRoute, ApiRunnable> registers = new HashMap<>();
-    private Map<Integer, ApiRunnable> regexRouteRegisters = new HashMap<>();
+    private final Map<ApiRoute, ApiRunnable> registers = new HashMap<>();
+    private final Map<Integer, ApiRunnable> regexRouteRegisters = new HashMap<>();
     private Pattern regexRoutePatterns;
+    private final Map<Object, ExceptionHandlerMethodResolver> exceptionHandlerCache =
+            new ConcurrentHashMap<>(64);
 
-    private ParameterNameDiscoverer nameDiscoverer;
+    private final ParameterNameDiscoverer nameDiscoverer;
     private ApplicationContext context;
     private String pathPrefix = "";
+    private ResponseFactory responseFactory;
 
     public ApiServlet(String pathPrefix) {
         this.pathPrefix = pathPrefix;
@@ -57,6 +66,8 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
     @Override
     public void afterPropertiesSet() throws Exception {
         loadApi();
+        loadExceptionResolver();
+        responseFactory = new ResponseFactory(context);
     }
 
     private void loadApi() {
@@ -82,6 +93,21 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
         patternBuilders.setCharAt(patternBuilders.length() - 1, '$');
         regexRoutePatterns = Pattern.compile(patternBuilders.toString());
         logger.info("loaded API ");
+    }
+
+    private void loadExceptionResolver() {
+        Map<String, GlobalExceptionResolver> beansOfType = context.getBeansOfType(GlobalExceptionResolver.class);
+        beansOfType.values().forEach(beanType -> {
+            Class<?> adviceBean = beanType.getClass();
+            boolean cglibProxy = Proxy.isProxyClass(adviceBean) || adviceBean.getName().contains("$$");
+            if (cglibProxy) {
+                adviceBean = ClassUtils.getUserClass(adviceBean);
+            }
+            ExceptionHandlerMethodResolver resolver = new ExceptionHandlerMethodResolver(adviceBean);
+            if (resolver.hasExceptionMappings()) {
+                this.exceptionHandlerCache.put(beanType, resolver);
+            }
+        });
     }
 
     /**
@@ -139,7 +165,9 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
         return builder.toString();
     }
 
-    // ！！入口！！
+    /**
+     * 路由解析入口
+     */
     private void doDispatch(HttpServletRequest req, HttpServletResponse resp) {
         String method = req.getMethod();
         ApiRoute apiRoute = ApiRoute.valueOf(method, req.getServletPath());
@@ -151,7 +179,7 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
                 Matcher matcher = regexRoutePatterns.matcher(req.getServletPath());
                 if (matcher.matches()) {
                     int i;
-                    for (i = 1; matcher.group(i) == null; i++);
+                    for (i = 1; matcher.group(i) == null; i++) ;
                     runnable = regexRouteRegisters.get(i);
 
                     // find path variable
@@ -168,11 +196,11 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
             ParamsHandler paramsHandler = buildParam(uriVariables, req, resp);
             Object result = runnable.run(paramsHandler);
             resp.setStatus(HttpStatus.OK.value());
-            writeResult(result, resp);
+            writeResult(responseFactory.buildSuccess(result), resp);
         } catch (SysException e) {
             logger.error("系统警告：{}", e.getMessage());
             resp.setStatus(Integer.parseInt(e.getErrCode()));
-            writeResult(Response.buildFailure(e.getErrCode(), e.getMessage()), resp);
+            writeResult(responseFactory.buildFailure(e.getErrCode(), e.getMessage()), resp);
         } catch (InvocationTargetException e) {
             handleInvocationTargetException(e, resp);
         }
@@ -185,45 +213,6 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
 
         }
         return paramsHandler;
-//        paramsHandler.getRawData();
-//        Class<?>[] types = apiRunnable.method.getParameterTypes(); //参数类别
-//        String[] names = nameDiscoverer.getParameterNames(apiRunnable.method);
-//
-//
-//        Object[] args = new Object[names.length];
-//        // 转成map
-//        Map<String, Object> map = null;
-//        try {
-//            map = JSON.parseObject("parameter", Map.class);
-//        } catch (IllegalArgumentException e) {
-////            throw new ApiException(ApiException.ERROR_CODE_CLIENT_ERROR, "调用失败：json字符串格式异常，请检查params参数 ");
-//            throw new RuntimeException("调用失败：json字符串格式异常，请检查params参数 ");
-//        }
-//
-//        for (Map.Entry<String, Object> m : map.entrySet()) {
-//            if (!Stream.of(names).anyMatch(n -> n.equals(m.getKey()))) {
-////                throw new ApiException(ApiException.ERROR_CODE_CLIENT_ERROR, "调用失败：接口不存在‘" + m.getKey() + "’参数");
-//                throw new RuntimeException("调用失败：接口不存在‘" + m.getKey() + "’参数");
-//            }
-//        }
-//
-//        for (int i = 0; i < names.length; i++) {
-//            if (!map.containsKey(names[i])) {
-//                continue;
-//            }
-//            Object arg = null;
-//            try {
-//                arg = convertJsonToBean(map.get(names[i]), types[i]);
-//            } catch (IllegalArgumentException e) {
-////                throw new ApiException(ApiException.ERROR_CODE_CLIENT_ERROR, String.format("调用失败：json字符串格式异常，请检查%s参数 ", names[i]));
-//                throw new RuntimeException(String.format("调用失败：json字符串格式异常，请检查%s参数 ", names[i]));
-//
-//            }
-//            args[i] = arg;
-//        }
-//        return args;
-        // -parameters
-        // 不确定
     }
 
     /**
@@ -249,78 +238,69 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
             BizException exception = (BizException) e.getTargetException();
             logger.error("系统警告：{}", exception.getMessage());
             resp.setStatus(HttpStatus.OK.value());
-            writeResult(Response.buildFailure(exception.getErrCode(), exception.getMessage()), resp);
+            writeResult(responseFactory.buildFailure(exception.getErrCode(), exception.getMessage()), resp);
         } else if (e.getTargetException() instanceof SysException) {
             SysException exception = (SysException) e.getTargetException();
             logger.error("系统警告：{}", exception.getMessage());
             resp.setStatus(Integer.parseInt(exception.getErrCode()));
-            writeResult(Response.buildFailure(exception.getErrCode(), exception.getMessage()), resp);
+            writeResult(responseFactory.buildFailure(exception.getErrCode(), exception.getMessage()), resp);
         } else if (e.getTargetException() instanceof IllegalArgumentException) {
             IllegalArgumentException exception = (IllegalArgumentException) e.getTargetException();
             logger.error("系统警告：{}", exception.getMessage());
             resp.setStatus(HttpStatus.OK.value());
-            writeResult(Response.buildFailure(FAIL_CODE, exception.getMessage()), resp);
+            writeResult(responseFactory.buildFailure(FAIL_CODE, exception.getMessage()), resp);
         } else if (e.getTargetException() instanceof MethodArgumentNotValidException) {
             MethodArgumentNotValidException exception = (MethodArgumentNotValidException) e.getTargetException();
             logger.error("系统警告：{}", exception.getMessage());
             StringBuilder message = new StringBuilder();
             List<FieldError> fieldErrors = exception.getBindingResult().getFieldErrors();
-            for(FieldError error:fieldErrors){
+            for (FieldError error : fieldErrors) {
                 message.append(error.getField()).append(":").append(error.getDefaultMessage()).append(",");
             }
             String msg = "";
-            if(message.length()> 0) {
-                msg = message.substring(0,message.length()-1);
+            if (message.length() > 0) {
+                msg = message.substring(0, message.length() - 1);
             }
             resp.setStatus(HttpStatus.BAD_GATEWAY.value());
-            writeResult(Response.buildFailure(FAIL_CODE, msg), resp);
+            writeResult(responseFactory.buildFailure(FAIL_CODE, msg), resp);
         } else if (e.getTargetException() instanceof BindException) {
             BindException exception = (BindException) e.getTargetException();
             logger.error("系统警告：{}", exception.getMessage());
             StringBuilder message = new StringBuilder();
             List<FieldError> fieldErrors = exception.getBindingResult().getFieldErrors();
-            for(FieldError error:fieldErrors){
+            for (FieldError error : fieldErrors) {
                 message.append(error.getField()).append(":").append(error.getDefaultMessage()).append(",");
             }
             String msg = "";
-            if(message.length()> 0) {
-                msg = message.substring(0,message.length()-1);
+            if (message.length() > 0) {
+                msg = message.substring(0, message.length() - 1);
             }
             resp.setStatus(HttpStatus.BAD_GATEWAY.value());
-            writeResult(Response.buildFailure(FAIL_CODE, msg), resp);
+            writeResult(responseFactory.buildFailure(FAIL_CODE, msg), resp);
         } else {
             Exception exception = (Exception) e.getTargetException();
             logger.error("服务响应错误: {}", exception.getMessage());
-            resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            exception.printStackTrace();
-            writeResult(Response.buildFailure(FAIL_CODE, "服务响应错误"), resp);
-        }
-    }
-
-    private <T> Object convertJsonToBean(Object val, Class<T> targetClass) {
-        Object result = null;
-        if (val == null) {
-            return null;
-        } else if (Integer.class.equals(targetClass)) {
-            result = Integer.parseInt(val.toString());
-        } else if (Long.class.equals(targetClass)) {
-            result = Long.parseLong(val.toString());
-        } else if (Date.class.equals(targetClass)) {
-            if (val.toString().matches("[0-9]+")) {
-                result = new Date(Long.parseLong(val.toString()));
-            } else {
-                throw new IllegalArgumentException("日期必须是长整型的时间戳");
+            Method method = null;
+            for (Map.Entry<Object, ExceptionHandlerMethodResolver> resolverEntry : exceptionHandlerCache.entrySet()) {
+                method = resolverEntry.getValue().resolveMethod(exception);
+                if (method != null) {
+                    try {
+                        ResponseStatus annotation = method.getAnnotation(ResponseStatus.class);
+                        Object invokeResult = method.invoke(resolverEntry.getKey(), exception);
+                        resp.setStatus(annotation != null ? annotation.value().value() : HttpStatus.INTERNAL_SERVER_ERROR.value());
+                        writeResult(responseFactory.buildFailure(invokeResult), resp);
+                        break;
+                    } catch (IllegalAccessException | InvocationTargetException ex) {
+                        ex.printStackTrace();
+                    }
+                }
             }
-        } else if (String.class.equals(targetClass)) {
-            if (val instanceof String) {
-                result = val;
-            } else {
-                throw new IllegalArgumentException("转换目标类型为字符串");
+            if (method == null) {
+                resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                exception.printStackTrace();
+                writeResult(responseFactory.buildFailure(FAIL_CODE, "服务响应错误"), resp);
             }
-        } else {
-            result = UtilJson.convertValue(val, targetClass);
         }
-        return result;
     }
 
     public class ApiRunnable {
@@ -331,13 +311,6 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
         private List<String> uriVariableNames;
 
         private final ParaProcessor parameterGetter;
-
-//        public ApiRunnable(Method method, String beanName, Object... args) {
-//            this.method = method;
-//            this.beanName = beanName;
-//            this.parameterGetter = ParaProcessorBuilder.me.build(nameDiscoverer, method);
-//            this.args = args;
-//        }
 
         public ApiRunnable(Method method, String beanName) {
             this.method = method;

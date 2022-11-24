@@ -1,13 +1,9 @@
 package com.binfast.boottest.service;
 
-import com.alibaba.cola.exception.BizException;
-import com.binfast.adpter.core.annotations.ApiMapping;
 import com.binfast.adpter.core.annotations.GetApiMapping;
+import com.binfast.boottest.controller.PlatformException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 // DEMO
 
@@ -25,8 +21,8 @@ public class UserServiceImpl {
      */
     @GetApiMapping(value = "/getUser/{userId}", notes = "获取用户资料")
     public UserInfo getUser(Long userId,String username) {
-        if (userId == null) {
-            throw new BizException("参数 'userId'不能为空");
+        if (userId == 1) {
+            throw new PlatformException("参数 'userId'不能为空");
         }
         return mock();
     }
