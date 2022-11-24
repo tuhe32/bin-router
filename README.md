@@ -10,9 +10,21 @@
 
 # 使用说明
 
+- 引用：Maven
+
+  ```xml
+  <dependency>
+    <groupId>io.github.tuhe32</groupId>
+    <artifactId>adapter-api-spring-boot-starter</artifactId>
+    <version>1.0.2</version>
+  </dependency>
+  ```
+
 - 基本使用：
 
-  1、@GetApiMapping，@PostApiMapping等注解注册相应路由，支持正则路由
+  1、@GetApiMapping，@PostApiMapping等注解，注册相应路由（支持正则路由）
+
+  2、在Service类上使用@ApiMapping("/xxx")可作为接口前缀
 
   2、@apiNote，@param，@return会自动整合到API接口文档中
 
@@ -60,8 +72,6 @@
   
   }
   ```
-
-  
 
 - 自定义接口返回格式：1.实现ResponseProcessor接口，2.用@Component注解标记。
 
@@ -114,19 +124,19 @@
 
 # 延伸阅读
 
-正则路由匹配问题参考的
+正则路由匹配问题参考
 
 [fast-route]: https://www.scienjus.com/fastroute-spring/
 
-根据自带的tag生成API文档使用了
+根据自带的tag生成API文档使用
 
 [smart-doc]: https://smart-doc-group.github.io/#/zh-cn/start/quickstart
 
-接口参数解析以及封装参考了
+接口参数解析以及封装参考
 
 [jfinal]: https://jfinal.com/doc/3-3
 
-接口使用重写springMvc的RequestMappingInfoHandlerMapping，没有直接使用dispathServlet
+重写springMvc的RequestMappingInfoHandlerMapping，没有直接使用dispathServlet
 
 项目整体思路参考one-api
 
