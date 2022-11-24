@@ -15,12 +15,11 @@ public class UserServiceImpl {
 
     /**
      * @apiNote 获取用户资料
-     * @param userId
-     * @param username
-     * @return
+     * @param userId 用户标识
+     * @return 用户信息
      */
-    @GetApiMapping(value = "/getUser/{userId}", notes = "获取用户资料")
-    public UserInfo getUser(Long userId,String username) {
+    @GetApiMapping(value = "/getUser")
+    public UserInfo getUser(Long userId) {
         if (userId == 1) {
             throw new PlatformException("参数 'userId'不能为空");
         }
@@ -36,9 +35,14 @@ public class UserServiceImpl {
         return info;
     }
 
-//    @ApiMapping(value = "bit.api.user.login")
-    @GetApiMapping(value = "/login/{userId}/{password}", notes = "用户登录中")
-    public UserInfo login(@PathVariable Long userId, @PathVariable String password)  {
+    /**
+     * @apiNote 用户登录
+     * @param userId 用户标识
+     * @param password 用户密码
+     * @return 用户信息
+     */
+    @GetApiMapping(value = "/login/{userId}/{password}")
+    public UserInfo login(Long userId, String password)  {
         System.out.println("userId: "+userId);
         System.out.println("password: "+password);
         return mock();
