@@ -75,12 +75,18 @@
 
 - 生成routes全局路由表
 
-  浏览器请求 http://127.0.0.1:[端口号]/doc/router 本地地址，端口替换成项目端口。如http://127.0.0.1:8080/doc/router，访问后resources目录下会出现routes路由表文件
+  浏览器请求 http://127.0.0.1:[端口号]/doc/router，如http://127.0.0.1:8080/doc/router。
+
+  访问后resources目录下会生成routes路由表文件
   <img width="1117" alt="image" src="https://user-images.githubusercontent.com/18496264/203773150-2b09e004-6924-4b09-b576-cdc5b7e987e9.png">
 
 - 生成API文档
 
-  浏览器请求 http://127.0.0.1:[端口号]/doc/api-json/[项目名] 本地地址，端口替换成项目端口。访问后resources目录下会出现基于OpenApi3.0 格式生成的openapi.json文件，可导入到Apifox中实现接口的Mock以及前后端对接
+  浏览器请求 http://127.0.0.1:[端口号]/doc/api-json/[项目名] ，
+
+  如http://127.0.0.1:8080/doc/api-json/shopAdmin。
+
+  访问后resources目录下会生成基于OpenApi3.0格式的openapi.json文件，可导入到Apifox中实现接口的Mock以及前后端对接
 
 - 自定义接口返回格式：1.实现ResponseProcessor接口，2.用@Component注解标记。
 
@@ -106,9 +112,9 @@
 
   2.用@Component注解标记，
 
-  3.@ExceptionHandler(PlatformException.class)标记自定义的异常
+  3.@ExceptionHandler(PlatformException.class)标记自定义异常处理方法
 
-  4.@ResponseStatus(HttpStatus.OK)标记返回的httpStatus
+  4.@ResponseStatus(HttpStatus.OK)标记返回的HttpStatus
 
   ```java
   @Component
