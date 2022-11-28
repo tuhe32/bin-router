@@ -7,7 +7,7 @@
     <groupId>io.github.tuhe32</groupId>
     <artifactId>bin-router</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <name>${project.artifactId}</name>
     <description>${project.artifactId}</description>
     <url>https://github.com/tuhe32/bin-router</url>
