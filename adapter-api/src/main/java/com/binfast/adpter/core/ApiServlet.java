@@ -7,6 +7,7 @@ import com.alibaba.fastjson2.JSON;
 import com.binfast.adpter.core.annotations.ApiMapping;
 import com.binfast.adpter.core.factory.GlobalExceptionResolver;
 import com.binfast.adpter.core.factory.ResponseFactory;
+import com.binfast.adpter.core.kit.ClassKit;
 import com.binfast.adpter.core.paramconvert.ParaProcessor;
 import com.binfast.adpter.core.paramconvert.ParaProcessorBuilder;
 import org.slf4j.Logger;
@@ -75,7 +76,8 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
         int indexes = 1;
         StringBuilder patternBuilders = new StringBuilder("^");
         for (String name : names) {
-            Class<?> type = context.getType(name);
+//            Class<?> type = context.getType(name);
+            Class<?> type = ClassKit.getCurrentByType(context, name);
             for (Method method : type.getDeclaredMethods()) {
                 ApiMapping mapping = AnnotatedElementUtils.findMergedAnnotation(method, ApiMapping.class);
 //                // 包装一个API

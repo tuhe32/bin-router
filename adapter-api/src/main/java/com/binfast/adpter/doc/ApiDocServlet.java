@@ -3,6 +3,7 @@ package com.binfast.adpter.doc;
 import com.binfast.adpter.core.ApiRoute;
 import com.binfast.adpter.core.ApiServlet;
 import com.binfast.adpter.core.annotations.ApiMapping;
+import com.binfast.adpter.core.kit.ClassKit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -56,13 +57,9 @@ public class ApiDocServlet {
             if (name.contains("basicErrorController")) {
                 continue;
             }
-            Class<?> type = applicationContext.getType(name);
+            Class<?> type = ClassKit.getCurrentByType(applicationContext, name);
             if (type == null) {
                 continue;
-            }
-            boolean cglibProxy = Proxy.isProxyClass(type) || type.getName().contains("$$");
-            if (cglibProxy) {
-                type = ClassUtils.getUserClass(type);
             }
             for (Method method : type.getDeclaredMethods()) {
                 RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
