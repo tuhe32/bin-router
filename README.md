@@ -135,7 +135,22 @@
   }
   ```
 
-  
+
+# 注意事项
+
+如果配置文件中设置了context-path，会使所有请求路径前强行增加/api前缀，需要增加设置
+
+```yaml
+server:
+  servlet:
+    context-path: /api
+   
+# 需要设置以下，不然会默认/api
+# 接口前缀设置
+adapter-api:
+  apiPrefix:
+  docUrlPrefix: /doc
+```
 
 # 延伸阅读
 

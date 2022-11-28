@@ -42,6 +42,8 @@ public class MyRequestMappingHandlerMapping extends RequestMappingInfoHandlerMap
 
     private boolean useTrailingSlashMatch = true;
 
+    private String pathPrefix = "";
+
     private Map<String, Predicate<Class<?>>> pathPrefixes = Collections.emptyMap();
 
     private ContentNegotiationManager contentNegotiationManager = new ContentNegotiationManager();
@@ -50,6 +52,10 @@ public class MyRequestMappingHandlerMapping extends RequestMappingInfoHandlerMap
     private StringValueResolver embeddedValueResolver;
 
     private RequestMappingInfo.BuilderConfiguration config = new RequestMappingInfo.BuilderConfiguration();
+
+    public MyRequestMappingHandlerMapping(String pathPrefix) {
+        this.pathPrefix = pathPrefix;
+    }
 
     public void setUseTrailingSlashMatch(boolean useTrailingSlashMatch) {
         this.useTrailingSlashMatch = useTrailingSlashMatch;
@@ -135,7 +141,7 @@ public class MyRequestMappingHandlerMapping extends RequestMappingInfoHandlerMap
         ApiServlet handlerBean = context.getBean(ApiServlet.class);
         Method targetMethod = ApiServlet.class.getDeclaredMethod("doDispatch", HttpServletRequest.class, HttpServletResponse.class);
         HandlerMethod method = createHandlerMethod(handlerBean, targetMethod);
-        if (lookupPath.startsWith("/api/")){
+        if (lookupPath.startsWith(pathPrefix)){
 //            log.info("deal with path: {} ", lookupPath);
             request.setAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE, method);
             request.setAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE, lookupPath);

@@ -23,8 +23,8 @@ public class AdapterApiConfiguration {
 //        return handlerMapping;
 //    }
     @Bean
-    public MyRequestMappingHandlerMapping myRequestMappingHandlerMapping() {
-        MyRequestMappingHandlerMapping mapping =  new MyRequestMappingHandlerMapping();
+    public MyRequestMappingHandlerMapping myRequestMappingHandlerMapping(AdapterApiProperties adapterApiProperties) {
+        MyRequestMappingHandlerMapping mapping =  new MyRequestMappingHandlerMapping(adapterApiProperties.getApiPrefix());
         mapping.setOrder(6);
 //        mapping.setInterceptors(getInterceptors(conversionService, resourceUrlProvider));
 //        mapping.setContentNegotiationManager(contentNegotiationManager);
