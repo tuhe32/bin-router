@@ -138,10 +138,12 @@
 
 # 注意事项
 
-- 支持Java Bean Validation，使用方式如下，【暂不支持在方法参数上使用@Validated注解】
+- 支持Java Bean Validation，使用方式如下，【方法参数上只支持@Valid，不支持@Validated】
 
   ```java
   // 若没有接口，直接在实现类增加校验注解
+  // 若类上有@Override，必须在父类或接口上写校验注解
+  // 即使只有@Valid，类上也要用@Validated注解标记
   @Validated
   public interface UserService {
   
@@ -154,7 +156,7 @@
   ```
 
   ```java
-  // 在接口参数实体增加检验注解
+  // 在参数实体增加检验注解
   public class UserInfo {
   
      @NotNull
@@ -172,17 +174,17 @@
 
 - 如果配置文件中设置了context-path，会使所有请求路径前强行增加/api前缀，需要增加设置
 
-```yaml
-server:
-  servlet:
-    context-path: /api
-   
-# 需要设置以下，不然会默认/api
-# 接口前缀设置
-adapter-api:
-  apiPrefix:
-  docUrlPrefix: /doc
-```
+  ```yaml
+  server:
+    servlet:
+      context-path: /api
+     
+  # 需要设置以下，不然会默认/api
+  # 接口前缀设置
+  adapter-api:
+    apiPrefix:
+    docUrlPrefix: /doc
+  ```
 
 # 延伸阅读
 
