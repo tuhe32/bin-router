@@ -138,7 +138,39 @@
 
 # 注意事项
 
-如果配置文件中设置了context-path，会使所有请求路径前强行增加/api前缀，需要增加设置
+- 支持Java Bean Validation，使用方式如下，【暂不支持在方法参数上使用@Validated注解】
+
+  ```java
+  // 若没有接口，直接在实现类增加校验注解
+  @Validated
+  public interface UserService {
+  
+      UserInfo getUser(@NotNull @Min(1) Long userId);
+  
+      void saveUser(@NotNull @Valid UserInfo userInfo);
+  
+      UserInfo login(@NotNull @Positive Long userId, @NotNull String password);
+  }
+  ```
+
+  ```java
+  // 在接口参数实体增加检验注解
+  public class UserInfo {
+  
+     @NotNull
+     private String name;
+  
+     @NotNull
+     @Positive
+     private Long userId;
+  
+     private String sex;
+  
+     private String idcard;
+  }
+  ```
+
+- 如果配置文件中设置了context-path，会使所有请求路径前强行增加/api前缀，需要增加设置
 
 ```yaml
 server:

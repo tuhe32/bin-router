@@ -29,6 +29,10 @@
             <artifactId>adapter-api-spring-boot-starter</artifactId>
             <version>1.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
 <!--        &lt;!&ndash; https://mvnrepository.com/artifact/cn.xusc/trace-recorder-core &ndash;&gt;-->
 <!--        <dependency>-->
 <!--            <groupId>cn.xusc</groupId>-->

@@ -192,7 +192,7 @@ public class ApiServlet implements InitializingBean, ApplicationContextAware {
                     }
                 }
                 if (runnable == null) {
-                    throw ExceptionFactory.sysException("400", "未找到路由");
+                    throw ExceptionFactory.sysException("404", "未找到路由");
                 }
             }
             ParamsHandler paramsHandler = buildParam(uriVariables, req, resp);

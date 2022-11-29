@@ -1,9 +1,19 @@
 package com.binfast.boottest.service;
-// teach 、nurse、airline
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
 public class UserInfo implements java.io.Serializable {
+
+	@NotNull
 	private String name;
+
+	@NotNull
+	@Positive
 	private Long userId;
+
 	private String sex;
+
 	private String idcard;
 	
 	public String getName() {
